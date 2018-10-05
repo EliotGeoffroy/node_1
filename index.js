@@ -1,24 +1,31 @@
-var http = require('http')
-	const fs = require('fs')
+const http = require('http') 
 
-        var server = http.createServer((request, response) =>{
-            // http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3
-            response.statusCode = 200;
-            response.setHeader('Content-Type', 'text/html');
+var fs = require('fs')
 
-            if (request.url === "/" || request.url === "/home") {
-                fs.createReadStream(__dirname + "/html/index.html","utf8").pipe(response);
-			}
-            else if (request.url === "/contact") {
-                fs.createReadStream(__dirname + "/html/contact.html","utf8").pipe(response);
-            }
-            else {
-              fs.createReadStream(__dirname + "/html/404.html","utf8").pipe(response);
-			  response.statusCode = 404;
-              //response.setHeader('Content-Type', 'text/plain');
-              //response.end();
-            }
-        })
+var express = require('express')
+var app = express()
 
-        server.listen(3000, 'localhost')
-        console.log("c'est parti")
+app.set('view engine', 'ejs')
+
+app.use((req, res, next) => {
+    console.log('Time:', Date.now(), req.url);
+    next(); // sans cette ligne on ne pourra pas poursuivre.
+})
+
+app.use("/static", express.static(__dirname + '/static'))
+
+app.get('/', (request, response) => {
+	response.render("index");
+})
+
+app.get('/contact', (request, response) => {
+	response.render("contact");
+})
+
+//manque 404
+app.use((req, res, next) => {
+	res.status(404).render("404")
+})
+
+app.listen(3000);
+console.log("c'est parti")
